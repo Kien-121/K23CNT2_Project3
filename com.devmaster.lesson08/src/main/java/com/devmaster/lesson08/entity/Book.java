@@ -13,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,15 +21,15 @@ public class Book {
     private String name;
     private String description;
     private String imgUrl;
-    private Integer quantity;
-    private double price;
+    private String quantity;
+    private Double price;
     private Boolean isActive;
 
     @ManyToMany
     @JoinTable(
-            name ="book_author",
+            name = "Book_Author",
             joinColumns = @JoinColumn(name = "bookId"),
-            inverseJoinColumns = @JoinColumn(name = "authorId"))
-    private List<Author> authors = new ArrayList<>();
-
+            inverseJoinColumns = @JoinColumn(name = "authorId")
+    )
+    private List<Author> authors =new ArrayList<>();
 }

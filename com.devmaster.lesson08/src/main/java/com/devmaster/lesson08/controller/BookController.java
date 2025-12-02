@@ -4,7 +4,6 @@ import com.devmaster.lesson08.entity.Author;
 import com.devmaster.lesson08.entity.Book;
 import com.devmaster.lesson08.service.AuthorService;
 import com.devmaster.lesson08.service.BookService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,80 +24,60 @@ public class BookController {
 
     @Autowired
     private BookService bookService;
+
     @Autowired
     private AuthorService authorService;
 
     private static final String UPLOAD_DIR = "src/main/resources/static/";
     private static final String UPLOAD_PathFile = "images/products/";
 
-    // ---------------------------
-    // Hiển thị toàn bộ sách
-    // ---------------------------
     @GetMapping
     public String listBooks(Model model) {
         model.addAttribute("books", bookService.getAllBooks());
         return "books/book-list";
     }
 
-    // ---------------------------
-    // Hiển thị form thêm mới
-    // ---------------------------
     @GetMapping("/new")
-    public String showCreateForm(Model model) {
+    public String showCreateBookForm(Model model) {
         model.addAttribute("book", new Book());
         model.addAttribute("authors", authorService.getAllAuthors());
         return "books/book-form";
     }
 
-    // ---------------------------
-    // Lưu sách mới
-    // ---------------------------
     @PostMapping("/new")
     public String saveBook(
             @ModelAttribute Book book,
             @RequestParam List<Long> authorIds,
-            @RequestParam("imageBook") MultipartFile imageFile
+            @RequestParam("imageBook") MultipartFile imageBook
     ) {
-        if (!imageFile.isEmpty()) {
+        if (!imageBook.isEmpty()) {
             try {
-                // Tạo thư mục nếu chưa có
                 Path uploadPath = Paths.get(UPLOAD_DIR + UPLOAD_PathFile);
+
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
-                // Lấy file gốc
-                String originalFilename = StringUtils.cleanPath(imageFile.getOriginalFilename());
-                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String originalFilename = StringUtils.cleanPath(imageBook.getOriginalFilename());
+                String fileExt = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String newFileName = book.getCode() + fileExt;
 
-                // Tạo tên file mới
-                String newFileName = book.getCode() + fileExtension;
+                Path path = uploadPath.resolve(newFileName);
+                Files.copy(imageBook.getInputStream(), path);
 
-                // Đường dẫn file mới
-                Path filePath = uploadPath.resolve(newFileName);
-
-                // Lưu file
-                Files.copy(imageFile.getInputStream(), filePath);
-
-                // Lưu đường dẫn vào DB
                 book.setImgUrl("/" + UPLOAD_PathFile + newFileName);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        // Set danh sách tác giả
         List<Author> authors = new ArrayList<>(authorService.findAllById(authorIds));
         book.setAuthors(authors);
 
-        bookService.savebook(book);
+        bookService.saveBook(book);
         return "redirect:/books";
     }
 
-    // ---------------------------
-    // Form sửa thông tin sách
-    // ---------------------------
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Book book = bookService.getBookById(id);
@@ -107,9 +86,6 @@ public class BookController {
         return "books/book-form";
     }
 
-    // ---------------------------
-    // Xóa sách
-    // ---------------------------
     @GetMapping("/delete/{id}")
     public String deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);

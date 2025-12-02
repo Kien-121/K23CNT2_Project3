@@ -4,9 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+
 import java.util.List;
-
-
 @Entity
 @Data
 @Builder
@@ -14,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,7 +24,7 @@ public class Author {
     private String email;
     private String phone;
     private String address;
-    private Boolean isActive;
+    private boolean isActive;
 
     @ManyToMany(mappedBy = "authors")
     private List<Book> books = new ArrayList<>();

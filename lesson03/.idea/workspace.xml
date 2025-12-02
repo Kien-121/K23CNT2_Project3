@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="62170b37-f51b-4e89-ad9b-c77bfaa70812" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/CartItem.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/Category.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/InventoryLog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/OrderItem.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/Orders.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/Product.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/ProductImage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/Review.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/entity/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/repository/CategoryRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/repository/OrderItemRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/repository/OrderRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/repository/ProductRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/repository/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/service/BaseService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/service/ProductService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../com.Giadungmart/src/main/java/com/Giadungmart/service/impl/ProductServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/controller/BookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/controller/BookController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/entity/Author.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/entity/Author.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/entity/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/entity/Book.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/repository/AuthorRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/repository/AuthorRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/repository/BookRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/repository/BookRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/service/AuthorService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/service/AuthorService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/service/BookService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/java/com/devmaster/lesson08/service/BookService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/templates/book-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/templates/book-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/templates/book-list.html" beforeDir="false" afterPath="$PROJECT_DIR$/../com.devmaster.lesson08/src/main/resources/templates/book-list.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="36H34O88OeRjGdQjTYzH2hbOU9v" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/IdeaProjects/lesson03",
+    "to.speed.mode.migration.done": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.28238.7" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="62170b37-f51b-4e89-ad9b-c77bfaa70812" name="Changes" comment="" />
+      <created>1764649477526</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764649477526</updated>
+    </task>
+    <servers />
+  </component>
+</project>
