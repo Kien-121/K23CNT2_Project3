@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tin Tức & Mẹo Vặt - NVK Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Header (Đồng bộ với Trang chủ) -->
+<header class="bg-white shadow-md sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+
+        <div class="flex items-center">
+            <a href="index.html" class="mr-4 text-gray-600 hover:text-indigo-600 focus:outline-none" title="Quay lại trang chủ">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-600 truncate cursor-pointer" onclick="window.location.href='index.html'">NVK SHOP</h1>
+        </div>
+
+        <!-- Thanh tìm kiếm -->
+        <div class="hidden sm:block relative w-full max-w-md mx-4 lg:mx-8">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm bài viết..." class="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+            <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+
+        <nav id="authLinks" class="flex space-x-2 sm:space-x-4 items-center">
+            <a href="auth.html?mode=login" id="loginLink" class="text-sm sm:text-base text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-lg whitespace-nowrap">Đăng nhập</a>
+            <a href="auth.html?mode=register" id="registerLink" class="hidden sm:block text-sm sm:text-base text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-lg border rounded-lg hover:border-indigo-500 whitespace-nowrap">Đăng ký</a>
+
+            <button onclick="window.location.href='index.html?action=openCart'" class="bg-indigo-500 text-white px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-indigo-600 transition duration-200 flex items-center relative">
+                <svg class="w-5 h-5 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span class="hidden sm:inline">Giỏ hàng</span>
+                <span id="cartCount" class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Mobile Search Bar -->
+    <div class="sm:hidden px-4 pb-3">
+        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm bài viết..." class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-8 flex-grow">
+
+    <!-- Featured Post (Bài viết nổi bật) -->
+    <div class="mb-12">
+        <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/kinh-nghiem-chon-mua-tu-lanh-tiet-kiem-dien-cho-g-603102" target="_blank" class="relative rounded-xl overflow-hidden shadow-xl group cursor-pointer block h-64 md:h-96">
+            <img src="https://cdnv2.tgdd.vn/mwg-static/dmx/News/Thumb/1410050/tu-lanh-panasonic-co-ngan-dong-mem-thumb%20%281%29639013261800532905.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" alt="Tủ lạnh Inverter">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6 md:p-8">
+                <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded uppercase mb-2 inline-block font-bold tracking-wider">Mẹo vặt</span>
+                <h2 class="text-2xl md:text-4xl font-bold text-white mb-2 leading-tight group-hover:text-indigo-300 transition">Kinh nghiệm chọn mua tủ lạnh tiết kiệm điện cho gia đình</h2>
+                <p class="text-gray-200 hidden md:block text-lg">Khám phá những tiêu chí quan trọng khi chọn tủ lạnh để giảm hóa đơn tiền điện hàng tháng mà vẫn đảm bảo hiệu năng tối ưu.</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- News Categories -->
+    <div class="flex space-x-4 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-full font-medium whitespace-nowrap shadow-md">Tất cả</button>
+        <button class="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 rounded-full font-medium whitespace-nowrap shadow-sm border border-gray-200 transition">Hướng dẫn sử dụng</button>
+        <button class="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 rounded-full font-medium whitespace-nowrap shadow-sm border border-gray-200 transition">Công thức nấu ăn</button>
+        <button class="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 rounded-full font-medium whitespace-nowrap shadow-sm border border-gray-200 transition">Sức khỏe</button>
+    </div>
+
+    <!-- News Grid (Các bài viết thực tế) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Article 1: Vệ sinh máy giặt -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition group h-full flex flex-col">
+            <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/cach-ve-sinh-may-giat-cua-truoc-542288" target="_blank" class="block relative overflow-hidden">
+                <img src="https://cdn.tgdd.vn/Files/2014/04/16/542288/cach-ve-sinh-may-giat-cua-truoc-5.jpg" class="w-full h-48 object-cover transition duration-500 group-hover:scale-110" alt="Vệ sinh máy giặt">
+                <span class="absolute top-4 right-4 bg-white text-xs font-bold px-2 py-1 rounded shadow text-gray-700">Cleanipedia</span>
+            </a>
+            <div class="p-6 flex flex-col flex-grow">
+                <span class="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">Hướng dẫn sử dụng</span>
+                <h3 class="text-xl font-bold text-gray-900 mt-1 mb-3 group-hover:text-indigo-600 transition">
+                    <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/cach-ve-sinh-may-giat-cua-truoc-542288" target="_blank">Cách vệ sinh máy giặt cửa ngang đơn giản tại nhà</a>
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Máy giặt cửa ngang cần được vệ sinh định kỳ để tránh nấm mốc và mùi hôi. Xem ngay hướng dẫn chi tiết từng bước.</p>
+                <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/cach-ve-sinh-may-giat-cua-truoc-542288" target="_blank" class="text-indigo-600 text-sm font-semibold hover:underline flex items-center">Đọc tiếp <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Article 2: Nồi chiên không dầu -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition group h-full flex flex-col">
+            <a href="https://cafef.vn/5-sai-lam-khi-dung-noi-chien-khong-dau-khien-noi-nhanh-hong-anh-huong-den-suc-khoe-188241208203334615.chn" target="_blank" class="block relative overflow-hidden">
+                <img src="https://cafefcdn.com/203337114487263232/2024/12/8/6-sai-lam-thuong-mac-phai-khi-dung-noi-chien-khong-dau-5-1733655066697-17336550675171113388484-1733664749435-1733664749829461303779.jpg" class="w-full h-48 object-cover transition duration-500 group-hover:scale-110" alt="Nồi chiên không dầu">
+                <span class="absolute top-4 right-4 bg-white text-xs font-bold px-2 py-1 rounded shadow text-gray-700">VnExpress</span>
+            </a>
+            <div class="p-6 flex flex-col flex-grow">
+                <span class="text-orange-600 text-xs font-bold uppercase tracking-wider mb-1">Lưu ý sử dụng</span>
+                <h3 class="text-xl font-bold text-gray-900 mt-1 mb-3 group-hover:text-orange-600 transition">
+                    <a href="https://cafef.vn/5-sai-lam-khi-dung-noi-chien-khong-dau-khien-noi-nhanh-hong-anh-huong-den-suc-khoe-188241208203334615.chn" target="_blank">Sai lầm khiến nồi chiên không dầu nhanh hỏng</a>
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Nồi chiên không dầu rất tiện lợi nhưng nếu sử dụng sai cách sẽ làm giảm tuổi thọ thiết bị. Cùng điểm qua những sai lầm thường gặp.</p>
+                <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <a href="https://cafef.vn/5-sai-lam-khi-dung-noi-chien-khong-dau-khien-noi-nhanh-hong-anh-huong-den-suc-khoe-188241208203334615.chn" target="_blank" class="text-orange-600 text-sm font-semibold hover:underline flex items-center">Đọc tiếp <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Article 3: Máy lọc không khí -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition group h-full flex flex-col">
+            <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/may-loc-khong-khi-la-gi-mang-lai-nhung-loi-ich-gi-1045862?srsltid=AfmBOopMAw62nd9U3vAyi0dApkgl0kpr0999uL6BB5vHxkoFZO1-eUK0" target="_blank" class="block relative overflow-hidden">
+                <img src="https://cdn.tgdd.vn/News/1045862/levoit-core-mini-051222-033118-845x472.jpg" class="w-full h-48 object-cover transition duration-500 group-hover:scale-110" alt="Máy lọc không khí">
+                <span class="absolute top-4 right-4 bg-white text-xs font-bold px-2 py-1 rounded shadow text-gray-700">Điện Máy Xanh</span>
+            </a>
+            <div class="p-6 flex flex-col flex-grow">
+                <span class="text-green-600 text-xs font-bold uppercase tracking-wider mb-1">Sức khỏe</span>
+                <h3 class="text-xl font-bold text-gray-900 mt-1 mb-3 group-hover:text-green-600 transition">
+                    <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/may-loc-khong-khi-la-gi-mang-lai-nhung-loi-ich-gi-1045862?srsltid=AfmBOopMAw62nd9U3vAyi0dApkgl0kpr0999uL6BB5vHxkoFZO1-eUK0" target="_blank">Máy lọc không khí là gì? Có công dụng gì?</a>
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">Tìm hiểu cơ chế hoạt động và lợi ích tuyệt vời của máy lọc không khí đối với sức khỏe gia đình bạn trong mùa ô nhiễm.</p>
+                <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <a href="https://www.dienmayxanh.com/kinh-nghiem-hay/may-loc-khong-khi-la-gi-mang-lai-nhung-loi-ich-gi-1045862?srsltid=AfmBOopMAw62nd9U3vAyi0dApkgl0kpr0999uL6BB5vHxkoFZO1-eUK0" target="_blank" class="text-green-600 text-sm font-semibold hover:underline flex items-center">Đọc tiếp <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<footer class="bg-gray-800 text-white py-6 mt-12 text-center">
+    <p>&copy; 2025 NVK Shop. All rights reserved.</p>
+</footer>
+
+<!-- Script Auth Logic (Giống index.html) -->
+<script>
+    function getAuthToken() { return sessionStorage.getItem('jwt_token'); }
+    function setAuthToken(token) { token ? sessionStorage.setItem('jwt_token', token) : sessionStorage.removeItem('jwt_token'); updateAuthUI(); }
+    function decodeJwt(token) { try { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch { return null; } }
+
+    function updateAuthUI() {
+        const token = getAuthToken();
+        const loginLink = document.getElementById('loginLink');
+        const registerLink = document.getElementById('registerLink');
+
+        if (token) {
+            const payload = decodeJwt(token);
+            loginLink.textContent = `Xin chào, ${payload ? payload.sub.split('@')[0] : 'User'}`;
+            loginLink.href = (payload?.role === 'ADMIN' ? './admin.html' : '#');
+            loginLink.onclick = null;
+
+            registerLink.textContent = 'Đăng xuất';
+            registerLink.onclick = handleLogout;
+            registerLink.href = '#';
+            registerLink.classList.remove('border');
+        } else {
+            loginLink.textContent = 'Đăng nhập';
+            loginLink.href = 'auth.html?mode=login';
+            loginLink.onclick = null;
+            registerLink.textContent = 'Đăng ký';
+            registerLink.href = 'auth.html?mode=register';
+            registerLink.onclick = null;
+            registerLink.classList.add('border');
+        }
+    }
+    function handleLogout(e) { e.preventDefault(); setAuthToken(null); alert("Đã đăng xuất thành công."); window.location.href = 'index.html'; }
+
+    document.addEventListener('DOMContentLoaded', updateAuthUI);
+</script>
+</body>
+</html>

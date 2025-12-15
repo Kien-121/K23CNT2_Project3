@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - NVK Shop</title>
+    <!-- Tải Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+
+        /* Sidebar Styles */
+        #categorySidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 260px; z-index: 50;
+            transform: translateX(-100%); transition: transform 0.3s ease-in-out;
+        }
+        #categorySidebar.open { transform: translateX(0); }
+        #mobileOverlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 40; }
+        #mobileOverlay.show { display: block; }
+
+        @media (min-width: 1024px) {
+            #categorySidebar {
+                position: sticky; top: 6rem; height: calc(100vh - 6rem); transform: none; z-index: 1;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            }
+            #mobileOverlay { display: none !important; }
+            #mobileMenuBtn { display: none; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="bg-white shadow-md sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center">
+            <button id="mobileMenuBtn" onclick="toggleSidebar()" class="mr-4 text-gray-600 hover:text-indigo-600 focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-600 truncate cursor-pointer" onclick="window.location.reload()">NVK SHOP</h1>
+        </div>
+
+        <div class="hidden sm:block relative w-full max-w-md mx-4 lg:mx-8">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." class="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+            <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+
+        <nav id="authLinks" class="flex space-x-2 sm:space-x-4 items-center">
+            <a href="auth.html?mode=login" id="loginLink" class="text-sm sm:text-base text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-lg whitespace-nowrap">Đăng nhập</a>
+            <a href="auth.html?mode=register" id="registerLink" class="hidden sm:block text-sm sm:text-base text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-lg border rounded-lg hover:border-indigo-500 whitespace-nowrap">Đăng ký</a>
+
+            <button id="cartButton" class="bg-indigo-500 text-white px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-indigo-600 transition duration-200 flex items-center relative">
+                <svg class="w-5 h-5 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span class="hidden sm:inline">Giỏ hàng</span>
+                <span id="cartCount" class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+            </button>
+        </nav>
+    </div>
+    <div class="sm:hidden px-4 pb-3">
+        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm sản phẩm..." class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    </div>
+</header>
+
+<!-- Main Layout -->
+<div class="flex container mx-auto px-4 py-4 flex-grow relative">
+    <div id="mobileOverlay" onclick="toggleSidebar()"></div>
+
+    <aside id="categorySidebar" class="bg-white rounded-xl p-4 overflow-y-auto lg:mr-8 border-r lg:border-none shadow-2xl lg:shadow-lg flex flex-col">
+        <div class="flex justify-between items-center mb-4 lg:hidden">
+            <h3 class="text-2xl font-bold text-indigo-600">Menu</h3>
+            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-700 mb-2 uppercase tracking-wide">Menu Chính</h3>
+        <ul class="space-y-1 mb-6 border-b border-gray-200 pb-4">
+            <li><a href="#" onclick="window.location.reload()" class="flex items-center p-2 rounded-lg hover:bg-indigo-50 text-gray-700 font-medium transition">Trang chủ</a></li>
+            <li><a href="#productList" onclick="scrollToProducts()" class="flex items-center p-2 rounded-lg hover:bg-indigo-50 text-gray-700 font-medium transition">Sản phẩm</a></li>
+            <li><a href="news.html" class="flex items-center p-2 rounded-lg hover:bg-indigo-50 text-gray-700 font-medium transition">Tin tức</a></li>
+            <li><a href="reviews.html" class="flex items-center p-2 rounded-lg hover:bg-indigo-50 text-gray-700 font-medium transition">Review (Đánh giá)</a></li>
+        </ul>
+
+        <h3 class="text-lg font-bold text-gray-700 mb-2 uppercase tracking-wide">Danh mục</h3>
+        <ul id="categoryList" class="space-y-2 text-gray-600 flex-grow">
+            <li><a href="#" class="block p-2 rounded-lg hover:bg-indigo-100 font-semibold active-category" onclick="filterProducts(event, null)">Tất cả Danh mục</a></li>
+            <div id="categoryLoading" class="text-sm text-gray-400 mt-2 ml-2">Đang tải danh mục...</div>
+        </ul>
+    </aside>
+
+    <main class="flex-grow w-full">
+
+        <!-- !!! KHẮC PHỤC LỖI: SỬ DỤNG CẤU TRÚC CHO SLIDER ĐỂ JS KHÔNG BỊ LỖI !!! -->
+        <div id="bannerCarousel" class="relative rounded-2xl overflow-hidden shadow-2xl mb-12 h-96 group bg-gray-900">
+            <!-- Slides Container (JS sẽ tìm ID này để render ảnh) -->
+            <div id="bannerSlides" class="relative w-full h-full"></div>
+
+            <!-- Navigation Arrows -->
+            <button onclick="prevBanner()" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition duration-300 z-30 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button onclick="nextBanner()" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition duration-300 z-30 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <!-- Indicators -->
+            <div id="bannerIndicators" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30"></div>
+        </div>
+
+        <h2 id="productListTitle" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 border-b-2 border-indigo-300 pb-2">Sản Phẩm Nổi Bật</h2>
+
+        <div id="statusContainer" class="w-full text-center">
+            <div id="loadingMessage" class="hidden py-12 text-gray-500 text-xl">
+                <svg class="animate-spin h-5 w-5 mr-3 inline-block text-indigo-500" viewBox="0 0 24 24"><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Đang tải sản phẩm...
+            </div>
+            <div id="initialMessage" class="py-12 text-gray-500 text-xl">Vui lòng chạy Backend (port 8080) để tải sản phẩm.</div>
+            <div id="errorMessage" class="hidden py-12 text-red-500 text-xl"></div>
+        </div>
+
+        <!-- Khung hiển thị sản phẩm -->
+        <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 mb-16">
+            <!-- Sản phẩm sẽ được render vào đây -->
+        </div>
+
+    </main>
+</div>
+
+<!-- Message Box -->
+<div id="messageBox" class="hidden fixed bottom-5 right-5 p-4 rounded-lg shadow-xl z-50" role="alert"></div>
+
+<!-- MODAL GIỎ HÀNG -->
+<div id="cartModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden transition-opacity duration-300">
+    <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+        <!-- ĐÃ SỬA: max-w-7xl để giao diện rộng hơn -->
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300 p-4 sm:p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold text-indigo-600">Giỏ Hàng Của Bạn</h3>
+                <button onclick="closeCartModal()" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div id="cartContent" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <div id="cartItemsList" class="space-y-4"></div>
+                    <div id="emptyCartMessage" class="hidden text-center py-10 text-gray-500 text-lg">Giỏ hàng trống.</div>
+                </div>
+                <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg shadow-inner sticky top-0 h-fit">
+                    <h4 class="text-xl font-semibold mb-4 text-gray-700">Thanh toán</h4>
+
+                    <!-- VOUCHER -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="voucherCode" placeholder="Nhập mã voucher" class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+                            <button type="button" onclick="applyVoucher()" class="bg-gray-800 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition">Áp dụng</button>
+                        </div>
+                        <p id="voucherMessage" class="text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tạm tính</span>
+                            <span id="tempTotal">0 ₫</span>
+                        </div>
+                        <div class="flex justify-between text-green-600 font-medium" id="discountRow" style="display: none;">
+                            <span>Giảm giá</span>
+                            <span id="discountAmount">-0 ₫</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2 mt-2">
+                            <span class="text-lg font-bold text-indigo-600">Tổng cộng</span>
+                            <span id="grandTotal" class="text-2xl font-bold text-red-600">0 VNĐ</span>
+                        </div>
+                    </div>
+
+                    <form id="checkoutForm" onsubmit="handleCheckout(event)">
+                        <div class="space-y-3">
+                            <input type="text" id="checkoutName" placeholder="Họ tên người nhận" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500">
+                            <input type="tel" id="checkoutPhone" placeholder="Số điện thoại" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500">
+                            <textarea id="checkoutAddress" placeholder="Địa chỉ giao hàng" rows="3" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500"></textarea>
+
+                            <select id="paymentMethod" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 bg-white">
+                                <option value="" disabled selected hidden>Chọn phương thức thanh toán</option>
+                                <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                                <option value="E_WALLET">Ví điện tử (Momo/ZaloPay)</option>
+                                <option value="BANK_TRANSFER">Chuyển khoản ngân hàng</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="checkoutButton" class="w-full mt-6 bg-red-600 text-white px-4 py-3 rounded-lg font-bold text-lg hover:bg-red-700 disabled:opacity-50 transition transform active:scale-95 shadow-lg">
+                            ĐẶT HÀNG NGAY
+                        </button>
+                        <div id="checkoutLoading" class="hidden text-center mt-3 text-indigo-600 font-medium">
+                            <svg class="animate-spin h-5 w-5 mr-2 inline-block" viewBox="0 0 24 24"><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            Đang xử lý đơn hàng...
+                        </div>
+                        <p id="checkoutAuthMessage" class="hidden text-center text-sm text-red-500 mt-3">Vui lòng <a href="auth.html?mode=login" class="font-semibold underline">Đăng nhập</a> để tiếp tục đặt hàng.</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+        <p>&copy; 2025 NVK Shop. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- JS Logic -->
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api/products';
+    const CATEGORIES_API_URL = 'http://localhost:8080/api/categories';
+    const ORDER_API_URL = 'http://localhost:8080/api/orders';
+
+    let cart = [];
+    let currentCategoryId = null;
+    let currentSearchTerm = '';
+    let searchTimeout;
+
+    let currentDiscount = 0;
+    let appliedCouponCode = '';
+
+    const productListElement = document.getElementById('productList');
+    const categoryListElement = document.getElementById('categoryList');
+    const loadingMessageElement = document.getElementById('loadingMessage');
+    const initialMessageElement = document.getElementById('initialMessage');
+    const errorMessageElement = document.getElementById('errorMessage');
+    const messageBox = document.getElementById('messageBox');
+    const cartCountElement = document.getElementById('cartCount');
+
+    // --- BANNER DATA & LOGIC ---
+    const banners = [
+        {
+            image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
+            badge: "Khuyến mãi đặc biệt",
+            title: "Nâng Tầm Không Gian<br>Sống Hiện Đại",
+            desc: "Khám phá bộ sưu tập thiết bị gia dụng thông minh mới nhất với ưu đãi lên đến 40% trong tuần này.",
+            btnPrimary: "Mua Ngay",
+            linkSecondary: "news.html",
+            textSecondary: "Xem Tin Tức"
+        },
+        {
+            image: "https://images.unsplash.com/photo-1556909212-d5b604d0c90d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
+            badge: "Sản phẩm mới",
+            title: "Thiết Bị Nhà Bếp<br>Thông Minh",
+            desc: "Trải nghiệm nấu nướng tuyệt vời với các dòng bếp từ, lò nướng hiện đại nhất.",
+            btnPrimary: "Khám Phá",
+            linkSecondary: "#productList",
+            textSecondary: "Mua Sắm"
+        },
+        {
+            image: "https://images.unsplash.com/photo-1517999144091-3d9dca6d1e43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
+            badge: "Mùa Hè Mát Lạnh",
+            title: "Giải Pháp Làm Mát<br>Tiết Kiệm Điện",
+            desc: "Máy lạnh Inverter, quạt điều hòa giảm giá sốc chào hè. Mua ngay kẻo lỡ!",
+            btnPrimary: "Mua Ngay",
+            linkSecondary: null,
+            textSecondary: null
+        }
+    ];
+
+    let currentBannerIndex = 0;
+    let bannerInterval;
+
+    function initBanners() {
+        const container = document.getElementById('bannerSlides');
+        const indicators = document.getElementById('bannerIndicators');
+
+        if(!container || !indicators) return;
+
+        container.innerHTML = '';
+        indicators.innerHTML = '';
+
+        banners.forEach((banner, index) => {
+            const slide = document.createElement('div');
+            slide.className = `absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100 z-20' : 'opacity-0 z-10'}`;
+            slide.id = `banner-slide-${index}`;
+            slide.innerHTML = `
+                <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
+                <img src="${banner.image}" alt="Banner ${index}" class="absolute inset-0 w-full h-full object-cover">
+                <div class="relative z-20 container mx-auto px-6 h-full flex flex-col justify-center items-start text-white">
+                    <span class="bg-yellow-400 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest shadow-sm transform transition-all duration-700 translate-y-0 opacity-100 delay-100">${banner.badge}</span>
+                    <h2 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight transform transition-all duration-700 translate-y-0 opacity-100 delay-200">${banner.title}</h2>
+                    <p class="text-lg md:text-xl mb-8 max-w-xl text-gray-100 transform transition-all duration-700 translate-y-0 opacity-100 delay-300">${banner.desc}</p>
+                    <div class="flex space-x-4 transform transition-all duration-700 translate-y-0 opacity-100 delay-500">
+                        <button onclick="scrollToProducts()" class="bg-white text-indigo-700 px-8 py-3 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-lg transform hover:-translate-y-1">${banner.btnPrimary}</button>
+                        ${banner.linkSecondary ? `<a href="${banner.linkSecondary}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-white hover:text-indigo-700 transition">${banner.textSecondary}</a>` : ''}
+                    </div>
+                </div>
+            `;
+            container.appendChild(slide);
+
+            const dot = document.createElement('button');
+            dot.className = `w-3 h-3 rounded-full transition-all duration-300 focus:outline-none ${index === 0 ? 'bg-white scale-125 w-8' : 'bg-white/50 hover:bg-white/80'}`;
+            dot.id = `banner-dot-${index}`;
+            dot.onclick = () => goToBanner(index);
+            indicators.appendChild(dot);
+        });
+    }
+
+    function showBanner(index) {
+        for (let i = 0; i < banners.length; i++) {
+            const slide = document.getElementById(`banner-slide-${i}`);
+            const dot = document.getElementById(`banner-dot-${i}`);
+            if(slide && dot) {
+                if (i === index) {
+                    slide.classList.remove('opacity-0', 'z-10');
+                    slide.classList.add('opacity-100', 'z-20');
+                    dot.classList.remove('bg-white/50', 'w-3');
+                    dot.classList.add('bg-white', 'w-8');
+                } else {
+                    slide.classList.remove('opacity-100', 'z-20');
+                    slide.classList.add('opacity-0', 'z-10');
+                    dot.classList.remove('bg-white', 'w-8');
+                    dot.classList.add('bg-white/50', 'w-3');
+                }
+            }
+        }
+        currentBannerIndex = index;
+    }
+
+    function nextBanner() {
+        const nextIndex = (currentBannerIndex + 1) % banners.length;
+        showBanner(nextIndex);
+    }
+
+    function prevBanner() {
+        const prevIndex = (currentBannerIndex - 1 + banners.length) % banners.length;
+        showBanner(prevIndex);
+    }
+
+    function goToBanner(index) {
+        showBanner(index);
+        resetBannerInterval();
+    }
+
+    function startBannerAutoPlay() {
+        bannerInterval = setInterval(nextBanner, 5000);
+    }
+
+    function resetBannerInterval() {
+        clearInterval(bannerInterval);
+        startBannerAutoPlay();
+    }
+
+    // --- AUTH & HELPERS ---
+    function getAuthToken() { return sessionStorage.getItem('jwt_token'); }
+    function setAuthToken(token) { token ? sessionStorage.setItem('jwt_token', token) : sessionStorage.removeItem('jwt_token'); updateAuthUI(); }
+    function decodeJwt(token) {
+        try { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch { return null; }
+    }
+    function updateAuthUI() {
+        const token = getAuthToken();
+        const loginLink = document.getElementById('loginLink');
+        const registerLink = document.getElementById('registerLink');
+
+        if (token) {
+            const payload = decodeJwt(token);
+            loginLink.textContent = `Xin chào, ${payload ? payload.sub.split('@')[0] : 'User'}`;
+            loginLink.href = (payload?.role === 'ADMIN' ? './admin.html' : '#');
+            loginLink.onclick = null;
+
+            registerLink.textContent = 'Đăng xuất';
+            registerLink.onclick = handleLogout;
+            registerLink.href = '#';
+            registerLink.classList.remove('border');
+        } else {
+            loginLink.textContent = 'Đăng nhập';
+            loginLink.href = 'auth.html?mode=login';
+            loginLink.onclick = null;
+
+            registerLink.textContent = 'Đăng ký';
+            registerLink.href = 'auth.html?mode=register';
+            registerLink.onclick = null;
+            registerLink.classList.add('border');
+        }
+    }
+    function handleLogout(e) {
+        e.preventDefault();
+        setAuthToken(null);
+        showMessage("Đã đăng xuất thành công.", 'success');
+        setTimeout(() => window.location.href = 'index.html', 500);
+    }
+
+    function showMessage(msg, type = 'error') {
+        messageBox.textContent = msg;
+        messageBox.className = `fixed bottom-5 right-5 p-4 rounded-lg shadow-xl z-50 transition-all duration-300 ${type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'} block`;
+        setTimeout(() => messageBox.classList.add('hidden'), 5000);
+    }
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+    }
+
+    function toggleSidebar() {
+        document.getElementById('categorySidebar').classList.toggle('open');
+        document.getElementById('mobileOverlay').classList.toggle('show');
+    }
+    function scrollToProducts() {
+        document.getElementById('productListTitle').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function fetchCategories() {
+        const loader = document.getElementById('categoryLoading');
+        if(loader) loader.classList.remove('hidden');
+        try {
+            const response = await fetch(CATEGORIES_API_URL);
+            if (!response.ok) throw new Error();
+            const categories = await response.json();
+
+            const allBtn = categoryListElement.firstElementChild;
+            categoryListElement.innerHTML = '';
+            categoryListElement.appendChild(allBtn);
+
+            categories.forEach(cat => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="#" class="block p-2 rounded-lg hover:bg-indigo-100 transition" onclick="filterProducts(event, ${cat.id})">${cat.name}</a>`;
+                categoryListElement.appendChild(li);
+            });
+        } catch (e) {
+            // Ignore category errors
+        } finally {
+            if(loader) loader.classList.add('hidden');
+        }
+    }
+
+    async function fetchProducts(term = '', catId = null) {
+        // Clear content and show loading
+        productListElement.innerHTML = '';
+        initialMessageElement.classList.add('hidden');
+        if(errorMessageElement) errorMessageElement.classList.add('hidden');
+        loadingMessageElement.classList.remove('hidden');
+
+        currentSearchTerm = term;
+        let url = `${API_BASE_URL}?`;
+        if (term) url += `name=${term}&`;
+        if (catId) url += `categoryId=${catId}`;
+
+        try {
+            const res = await fetch(url);
+            const products = await res.json();
+
+            loadingMessageElement.classList.add('hidden');
+
+            if (products.length === 0) {
+                productListElement.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl py-12">Không tìm thấy sản phẩm.</div>';
+            } else {
+                products.forEach(renderProductCard);
+            }
+        } catch (error) {
+            loadingMessageElement.classList.add('hidden');
+            if(errorMessageElement) {
+                errorMessageElement.textContent = "Lỗi kết nối Backend!";
+                errorMessageElement.classList.remove('hidden');
+            }
+        }
+    }
+
+    function filterProducts(e, id) {
+        e.preventDefault();
+        document.querySelectorAll('#categoryList a').forEach(a => a.classList.remove('bg-indigo-200'));
+        e.currentTarget.classList.add('bg-indigo-200');
+        currentCategoryId = id;
+        fetchProducts(currentSearchTerm, id);
+        if(window.innerWidth < 1024) toggleSidebar();
+    }
+
+    function renderProductCard(p) {
+        const div = document.createElement('div');
+        div.className = "bg-white p-4 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 flex flex-col h-full";
+        const price = parseFloat(p.sellingPrice);
+        div.innerHTML = `
+            <div class="relative mb-3 h-48 rounded-lg overflow-hidden group">
+                <img src="${p.mainImageUrl}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" onerror="this.src='https://placehold.co/400x300?text=Error'">
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1 truncate">${p.name}</h3>
+            <div class="mt-auto flex items-center justify-between">
+                <span class="text-xl font-bold text-red-600">${formatCurrency(price)}</span>
+                <button onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${price}, '${p.mainImageUrl}')" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 shadow-md">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+            </div>`;
+        productListElement.appendChild(div);
+    }
+
+    // --- CART LOGIC ---
+    function addToCart(id, name, price, img) {
+        const exist = cart.find(i => i.productId === id);
+        if (exist) exist.quantity++;
+        else cart.push({ productId: id, quantity: 1, product: { name, sellingPrice: price, mainImageUrl: img } });
+        updateCartCount();
+        showMessage(`Đã thêm "${name}"`, 'success');
+    }
+    function updateCartCount() { document.getElementById('cartCount').textContent = cart.reduce((sum, i) => sum + i.quantity, 0); }
+    function openCartModal() {
+        renderCartItems();
+        document.getElementById('cartModal').classList.remove('hidden');
+    }
+    function closeCartModal() { document.getElementById('cartModal').classList.add('hidden'); }
+
+    function renderCartItems() {
+        const list = document.getElementById('cartItemsList');
+        list.innerHTML = '';
+        let total = 0;
+        const token = getAuthToken();
+
+        if (cart.length === 0) {
+            document.getElementById('emptyCartMessage').classList.remove('hidden');
+            document.getElementById('checkoutButton').disabled = true;
+            currentDiscount = 0;
+            appliedCouponCode = '';
+            document.getElementById('discountRow').style.display = 'none';
+            document.getElementById('tempTotal').textContent = formatCurrency(0);
+            document.getElementById('grandTotal').textContent = formatCurrency(0);
+            document.getElementById('checkoutButton').setAttribute('data-total', 0);
+        } else {
+            document.getElementById('emptyCartMessage').classList.add('hidden');
+            document.getElementById('checkoutButton').disabled = !token;
+            document.getElementById('checkoutAuthMessage').classList.toggle('hidden', !!token);
+
+            cart.forEach(item => {
+                const price = item.product.sellingPrice;
+                total += price * item.quantity;
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between border-b pb-2";
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${item.product.mainImageUrl}" class="w-12 h-12 rounded object-cover mr-2">
+                        <div><p class="font-bold text-sm">${item.product.name}</p><p class="text-xs text-gray-500">${formatCurrency(price)}</p></div>
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="updateCartItemQuantity(${item.productId}, -1)" class="px-2 bg-gray-200 rounded">-</button>
+                        <span class="mx-2 text-sm">${item.quantity}</span>
+                        <button onclick="updateCartItemQuantity(${item.productId}, 1)" class="px-2 bg-gray-200 rounded">+</button>
+                        <button onclick="removeCartItem(${item.productId})" class="ml-3 text-red-500">x</button>
+                    </div>`;
+                list.appendChild(div);
+            });
+
+            document.getElementById('tempTotal').textContent = formatCurrency(total);
+
+            if (currentDiscount > 0) {
+                if(appliedCouponCode === 'GIAY_VANG') {
+                    currentDiscount = total * 0.1;
+                } else if (appliedCouponCode === 'FREE_SHIP') {
+                     currentDiscount = 30000;
+                }
+                if(currentDiscount > total) currentDiscount = total;
+
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountAmount').textContent = `-${formatCurrency(currentDiscount)}`;
+            } else {
+                document.getElementById('discountRow').style.display = 'none';
+            }
+
+            const finalTotal = total - currentDiscount;
+            document.getElementById('grandTotal').textContent = formatCurrency(finalTotal);
+            document.getElementById('checkoutButton').setAttribute('data-total', finalTotal);
+        }
+    }
+
+    function updateCartItemQuantity(id, change) {
+        const item = cart.find(i => i.productId === id);
+        if (item) { item.quantity += change; if (item.quantity <= 0) cart = cart.filter(i => i.productId !== id); }
+        renderCartItems(); updateCartCount();
+    }
+    function removeCartItem(id) { cart = cart.filter(i => i.productId !== id); renderCartItems(); updateCartCount(); }
+
+    // --- VOUCHER LOGIC (MOCKUP) ---
+    function applyVoucher() {
+        const codeInput = document.getElementById('voucherCode');
+        const message = document.getElementById('voucherMessage');
+        const code = codeInput.value.trim().toUpperCase();
+
+        if(!code) {
+            message.textContent = "Vui lòng nhập mã!";
+            message.className = "text-xs mt-1 text-red-500 block";
+            return;
+        }
+
+        if (code === 'GIAY_VANG') {
+            appliedCouponCode = code;
+            currentDiscount = 0;
+            message.textContent = "Áp dụng mã GIAY_VANG: Giảm 10%";
+            message.className = "text-xs mt-1 text-green-600 block";
+            renderCartItems();
+        } else if (code === 'FREE_SHIP') {
+            appliedCouponCode = code;
+            currentDiscount = 30000;
+            message.textContent = "Áp dụng mã FREE_SHIP: Giảm 30k";
+            message.className = "text-xs mt-1 text-green-600 block";
+            renderCartItems();
+        } else {
+            appliedCouponCode = '';
+            currentDiscount = 0;
+            message.textContent = "Mã giảm giá không hợp lệ!";
+            message.className = "text-xs mt-1 text-red-500 block";
+            renderCartItems();
+        }
+    }
+
+    async function handleCheckout(e) {
+        e.preventDefault();
+        const token = getAuthToken();
+        if (!token) return window.location.href = 'auth.html?mode=login';
+
+        const btn = document.getElementById('checkoutButton');
+        btn.disabled = true;
+        document.getElementById('checkoutLoading').classList.remove('hidden');
+
+        const payload = {
+            receiverName: document.getElementById('checkoutName').value,
+            receiverPhone: document.getElementById('checkoutPhone').value,
+            shippingAddress: document.getElementById('checkoutAddress').value,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            totalAmount: parseFloat(btn.getAttribute('data-total')),
+            items: cart.map(i => ({ productId: i.productId, quantity: i.quantity })),
+        };
+
+        try {
+            const res = await fetch(ORDER_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Lỗi đặt hàng');
+            const data = await res.json();
+            cart = [];
+            currentDiscount = 0;
+            appliedCouponCode = '';
+            updateCartCount();
+            closeCartModal();
+            showMessage(`Đặt hàng thành công! Mã: #${data.id}`, 'success');
+        } catch (err) { showMessage(err.message, 'error'); }
+        finally { btn.disabled = false; document.getElementById('checkoutLoading').classList.add('hidden'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initBanners(); // Khởi tạo banner
+        startBannerAutoPlay(); // Bắt đầu auto-play
+
+        if (window.location.protocol !== 'file:') {
+            fetchProducts();
+            fetchCategories();
+        }
+        updateCartCount();
+        updateAuthUI();
+
+        document.getElementById('cartButton').addEventListener('click', openCartModal);
+
+        const handleSearch = (e) => {
+            clearTimeout(searchTimeout);
+            const term = e.target.value;
+            searchTimeout = setTimeout(() => {
+                fetchProducts(term, currentCategoryId);
+            }, 300);
+        };
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        document.getElementById('mobileSearchInput').addEventListener('input', handleSearch);
+
+        const allBtn = document.querySelector('#categoryList .active-category');
+        if(allBtn) allBtn.classList.add('bg-indigo-200');
+    });
+</script>
+</body>
+</html>
