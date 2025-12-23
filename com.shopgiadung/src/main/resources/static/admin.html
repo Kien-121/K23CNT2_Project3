@@ -17,14 +17,19 @@
 
         /* Hiệu ứng Sidebar */
         .sidebar-link {
-            display: flex; align-items: center; padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
             color: #9ca3af;
             border-radius: 0.5rem;
             transition: all 0.2s;
             cursor: pointer;
         }
         .sidebar-link:hover, .sidebar-link.active {
-            background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
         }
         .sidebar-link i { width: 1.5rem; text-align: center; margin-right: 0.75rem; }
 
@@ -82,9 +87,11 @@
             <a onclick="switchSection('inventory')" id="menu-inventory" class="sidebar-link">
                 <i class="fa-solid fa-warehouse"></i> Kho hàng
             </a>
+            <!-- Thêm mục Khuyến mãi -->
             <a onclick="switchSection('promotions')" id="menu-promotions" class="sidebar-link">
                 <i class="fa-solid fa-ticket"></i> Khuyến mãi
             </a>
+            <!-- Thêm mục Tin tức -->
             <a onclick="switchSection('news')" id="menu-news" class="sidebar-link">
                 <i class="fa-solid fa-newspaper"></i> Tin tức
             </a>
@@ -424,7 +431,7 @@
     </div>
 </div>
 
-<!-- MODAL NHÂN VIÊN (Đã thêm no-scrollbar và max-height) -->
+<!-- MODAL NHÂN VIÊN (Thêm no-scrollbar và max-height) -->
 <div id="staffModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
     <div class="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
         <div class="flex justify-between items-center mb-5 border-b pb-4">
@@ -460,7 +467,7 @@
     </div>
 </div>
 
-<!-- MODAL KHUYẾN MÃI (Đã thêm no-scrollbar và max-height) -->
+<!-- MODAL KHUYẾN MÃI (Thêm no-scrollbar và max-height) -->
 <div id="promoModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
     <div class="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
         <div class="flex justify-between items-center mb-5 border-b pb-4">

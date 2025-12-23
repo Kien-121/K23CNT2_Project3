@@ -10,21 +10,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/promotions")
 @CrossOrigin(origins = "*")
 public class NvkPromotionController {
 
     @Autowired
     private NvkPromotionService promotionService;
 
+    // --- API DÀNH CHO KHÁCH HÀNG (PUBLIC) ---
+    // GET /api/promotions
+    @GetMapping("/api/promotions")
+    public List<NvkPromotion> getPublicPromotions() {
+        // Có thể thêm logic lọc chỉ lấy voucher còn hạn, còn lượt dùng...
+        // Tạm thời trả về tất cả
+        return promotionService.getAllPromotions();
+    }
+
+    // --- API DÀNH CHO ADMIN ---
+
     // GET /api/admin/promotions
-    @GetMapping
+    @GetMapping("/api/admin/promotions")
     public List<NvkPromotion> getAllPromotions() {
         return promotionService.getAllPromotions();
     }
 
     // GET /api/admin/promotions/{id}
-    @GetMapping("/{id}")
+    @GetMapping("/api/admin/promotions/{id}")
     public ResponseEntity<?> getPromotionById(@PathVariable Long id) {
         return promotionService.getPromotionById(id)
                 .map(ResponseEntity::ok)
@@ -32,7 +42,7 @@ public class NvkPromotionController {
     }
 
     // POST /api/admin/promotions - Tạo mới
-    @PostMapping
+    @PostMapping("/api/admin/promotions")
     public ResponseEntity<?> createPromotion(@RequestBody NvkPromotion promotion) {
         try {
             NvkPromotion saved = promotionService.savePromotion(promotion);
@@ -43,7 +53,7 @@ public class NvkPromotionController {
     }
 
     // PUT /api/admin/promotions/{id} - Cập nhật
-    @PutMapping("/{id}")
+    @PutMapping("/api/admin/promotions/{id}")
     public ResponseEntity<?> updatePromotion(@PathVariable Long id, @RequestBody NvkPromotion promotionDetails) {
         return promotionService.getPromotionById(id)
                 .map(existing -> {
@@ -60,7 +70,7 @@ public class NvkPromotionController {
     }
 
     // DELETE /api/admin/promotions/{id}
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/api/admin/promotions/{id}")
     public ResponseEntity<?> deletePromotion(@PathVariable Long id) {
         try {
             promotionService.deletePromotion(id);

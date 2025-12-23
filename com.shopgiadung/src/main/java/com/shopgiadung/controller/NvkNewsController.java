@@ -5,7 +5,6 @@ import com.shopgiadung.service.NvkNewsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -16,43 +15,59 @@ public class NvkNewsController {
     @Autowired
     private NvkNewsService newsService;
 
-    // PUBLIC API: Lấy danh sách tin tức
+    // Public API
     @GetMapping("/news")
     public List<NvkNews> getAllNews() {
         return newsService.getAllNews();
     }
 
-    // PUBLIC API: Xem chi tiết tin
     @GetMapping("/news/{id}")
-    public ResponseEntity<?> getNewsById(@PathVariable Long id) {
+    public ResponseEntity<?> getNews(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(newsService.getNewsById(id));
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body("Không tìm thấy bài viết");
         }
     }
 
-    // ADMIN API: Thêm mới tin tức
+    // Admin API - Thêm mới (Đã bổ sung try-catch để báo lỗi chi tiết)
     @PostMapping("/admin/news")
-    public ResponseEntity<NvkNews> createNews(@RequestBody NvkNews news) {
-        return ResponseEntity.ok(newsService.saveNews(news));
+    public ResponseEntity<?> createNews(@RequestBody NvkNews news) {
+        try {
+            NvkNews savedNews = newsService.saveNews(news);
+            return ResponseEntity.ok(savedNews);
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra console server
+            // Trả về thông báo lỗi cụ thể (ví dụ: Table doesn't exist)
+            return ResponseEntity.internalServerError().body("Lỗi server: " + e.getMessage());
+        }
     }
 
-    // ADMIN API: Cập nhật tin tức
+    // Admin API - Cập nhật
     @PutMapping("/admin/news/{id}")
-    public ResponseEntity<NvkNews> updateNews(@PathVariable Long id, @RequestBody NvkNews details) {
-        NvkNews news = newsService.getNewsById(id);
-        news.setTitle(details.getTitle());
-        news.setContent(details.getContent());
-        news.setImageUrl(details.getImageUrl());
-        news.setCategory(details.getCategory());
-        return ResponseEntity.ok(newsService.saveNews(news));
+    public ResponseEntity<?> updateNews(@PathVariable Long id, @RequestBody NvkNews newsDetails) {
+        try {
+            NvkNews news = newsService.getNewsById(id);
+            news.setTitle(newsDetails.getTitle());
+            news.setCategory(newsDetails.getCategory());
+            news.setContent(newsDetails.getContent());
+            news.setImageUrl(newsDetails.getImageUrl());
+
+            return ResponseEntity.ok(newsService.saveNews(news));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Lỗi cập nhật: " + e.getMessage());
+        }
     }
 
-    // ADMIN API: Xóa tin tức
+    // Admin API - Xóa
     @DeleteMapping("/admin/news/{id}")
     public ResponseEntity<?> deleteNews(@PathVariable Long id) {
-        newsService.deleteNews(id);
-        return ResponseEntity.ok().build();
+        try {
+            newsService.deleteNews(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Lỗi xóa: " + e.getMessage());
+        }
     }
 }

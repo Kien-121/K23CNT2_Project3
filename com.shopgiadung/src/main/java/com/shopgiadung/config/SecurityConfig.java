@@ -3,7 +3,9 @@ package com.shopgiadung.config;
 import com.shopgiadung.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // Thêm import này
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -45,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "null")); // Cho phép localhost
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "null", "*")); // Cho phép localhost và file://
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -71,7 +73,11 @@ public class SecurityConfig {
                                 "/index.html",
                                 "/auth.html",
                                 "/news.html",
+                                "/news_detail.html", // Cho phép xem chi tiết tin tức
                                 "/reviews.html",
+                                "/contact.html", // Cho phép xem trang liên hệ
+                                "/promotions.html",
+                                "/my_orders.html",
                                 "/admin.html",
                                 "/static/**",
                                 "/css/**",
@@ -79,16 +85,23 @@ public class SecurityConfig {
                                 "/images/**"
                         ).permitAll()
 
-                        // API Public
+                        // API Public (GET only cho reviews và news)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/categories/**").permitAll()
-                        // Cho phép xem review không cần login
-                        .requestMatchers("/api/reviews/**").permitAll()
-                        // Cho phép xem tin tức không cần login (MỚI THÊM)
-                        .requestMatchers("/api/news/**").permitAll()
 
-                        // 2. ADMIN ACCESS (Chỉ Admin mới được gọi API quản trị - Bao gồm cả /api/admin/news)
+                        // SỬA LỖI ĐÁNH GIÁ: Chỉ cho phép GET (xem) là public, còn POST (thêm) phải đăng nhập
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/api/news/**").permitAll()
+
+                        // Cho phép lấy danh sách khuyến mãi công khai (chỉ GET)
+                        .requestMatchers(HttpMethod.GET, "/api/promotions/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/my_orders/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/admin/promotions/**").permitAll()
+
+                        // 2. ADMIN ACCESS (Chỉ Admin mới được gọi API quản trị - các method POST/PUT/DELETE)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // 3. AUTHENTICATED ACCESS (Các API khác yêu cầu đăng nhập)

@@ -13,14 +13,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*") // Mở rộng CORS
+@CrossOrigin(origins = "*") // Cho phép mọi nguồn truy cập (tránh lỗi CORS)
 public class NvkOrderController {
 
     @Autowired
     private NvkOrderService orderService;
 
     /**
-     * API: POST /api/orders - Tạo đơn hàng mới
+     * API: POST /api/orders
+     * Tạo đơn hàng mới (Dành cho Khách hàng)
      */
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody NvkOrderRequest request) {
@@ -29,18 +30,17 @@ public class NvkOrderController {
             return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
 
         } catch (RuntimeException e) {
-            // Lỗi logic (ví dụ: Hết hàng, Không tìm thấy user)
-            e.printStackTrace(); // In lỗi ra console server để debug
+            e.printStackTrace(); // In lỗi ra console để debug
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi đặt hàng: " + e.getMessage());
         } catch (Exception e) {
-            // Lỗi hệ thống khác (SQL, NullPointer...)
-            e.printStackTrace(); // In lỗi ra console server để debug
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 
     /**
-     * API: GET /api/orders - Lấy tất cả đơn hàng
+     * API: GET /api/orders
+     * Lấy tất cả đơn hàng (Dành cho Admin)
      */
     @GetMapping
     public ResponseEntity<List<NvkOrder>> getAllOrders() {
@@ -48,7 +48,25 @@ public class NvkOrderController {
     }
 
     /**
-     * API: PUT /api/orders/{id}/status - Cập nhật trạng thái đơn hàng (Dành cho Admin)
+     * API: GET /api/orders/my-orders
+     * Lấy danh sách đơn hàng của người dùng đang đăng nhập (Dành cho Khách hàng)
+     */
+    @GetMapping("/my-orders")
+    public ResponseEntity<?> getMyOrders() {
+        try {
+            List<NvkOrder> myOrders = orderService.getMyOrders();
+            return ResponseEntity.ok(myOrders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống.");
+        }
+    }
+
+    /**
+     * API: PUT /api/orders/{id}/status
+     * Cập nhật trạng thái đơn hàng (Dành cho Admin hoặc Khách hàng muốn hủy đơn)
+     * Body: { "status": "PROCESSING" } hoặc { "status": "CANCELLED" }
      */
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
@@ -61,7 +79,7 @@ public class NvkOrderController {
             return ResponseEntity.ok(updatedOrder);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("Lỗi cập nhật: " + e.getMessage());
         }
     }
 }
