@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Trị - NVK Shop</title>
+
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Inter & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+
+        /* Hiệu ứng Sidebar */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            color: #9ca3af;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+        }
+        .sidebar-link i { width: 1.5rem; text-align: center; margin-right: 0.75rem; }
+
+        /* Ẩn/Hiện nội dung */
+        .section-content { display: none; }
+        .section-content.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal Background */
+        .modal-bg { background-color: rgba(0, 0, 0, 0.5); }
+
+        /* --- CSS MỚI: Ẩn thanh cuộn nhưng vẫn cho phép cuộn --- */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+<!-- 1. SIDEBAR (BÊN TRÁI) -->
+<aside class="w-64 bg-gray-900 text-white flex flex-col shadow-2xl flex-shrink-0 transition-all duration-300" id="sidebar">
+    <!-- Logo -->
+    <div class="h-16 flex items-center px-6 border-b border-gray-800">
+        <i class="fa-solid fa-screwdriver-wrench text-indigo-500 text-2xl mr-3"></i>
+        <span class="text-xl font-bold tracking-wider">NVK ADMIN</span>
+    </div>
+
+    <!-- Menu (Đã thêm class no-scrollbar) -->
+    <nav class="flex-1 overflow-y-auto py-6 px-3 no-scrollbar">
+        <div class="mb-6">
+            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">TỔNG QUAN</p>
+            <a onclick="switchSection('dashboard')" id="menu-dashboard" class="sidebar-link active">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="mb-6">
+            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">QUẢN LÝ</p>
+            <a onclick="switchSection('products')" id="menu-products" class="sidebar-link">
+                <i class="fa-solid fa-box-open"></i> Sản phẩm
+            </a>
+            <a onclick="switchSection('orders')" id="menu-orders" class="sidebar-link">
+                <i class="fa-solid fa-cart-shopping"></i> Đơn hàng
+            </a>
+            <a onclick="switchSection('staffs')" id="menu-staffs" class="sidebar-link">
+                <i class="fa-solid fa-user-tie"></i> Nhân viên
+            </a>
+            <a onclick="switchSection('customers')" id="menu-customers" class="sidebar-link">
+                <i class="fa-solid fa-users"></i> Khách hàng
+            </a>
+            <a onclick="switchSection('inventory')" id="menu-inventory" class="sidebar-link">
+                <i class="fa-solid fa-warehouse"></i> Kho hàng
+            </a>
+            <!-- Thêm mục Khuyến mãi -->
+            <a onclick="switchSection('promotions')" id="menu-promotions" class="sidebar-link">
+                <i class="fa-solid fa-ticket"></i> Khuyến mãi
+            </a>
+            <!-- Thêm mục Tin tức -->
+            <a onclick="switchSection('news')" id="menu-news" class="sidebar-link">
+                <i class="fa-solid fa-newspaper"></i> Tin tức
+            </a>
+        </div>
+    </nav>
+
+    <!-- User Info & Logout -->
+    <div class="p-4 border-t border-gray-800 bg-gray-900">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-lg">A</div>
+            <div class="overflow-hidden">
+                <h4 class="text-sm font-semibold truncate" id="adminName">Admin User</h4>
+                <p class="text-xs text-gray-400">Super Admin</p>
+            </div>
+        </div>
+        <button onclick="handleLogout()" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </button>
+    </div>
+</aside>
+
+<!-- 2. MAIN CONTENT (BÊN PHẢI) -->
+<div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+
+    <!-- Top Header -->
+    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10">
+        <div class="flex items-center text-gray-500 text-sm">
+            <span id="currentPageTitle" class="font-semibold text-gray-800 text-lg">Dashboard</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="./index.html" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-1">
+                <i class="fa-solid fa-external-link-alt"></i> Xem Website
+            </a>
+            <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200">
+                <i class="fa-regular fa-bell"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Content Body (Đã thêm class no-scrollbar) -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 no-scrollbar">
+
+        <!-- SECTION 1: DASHBOARD -->
+        <div id="dashboard" class="section-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Tổng Doanh Thu</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="statRevenue">Loading...</h3>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Đơn Hàng Mới</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="statOrders">Loading...</h3>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Sản Phẩm</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="statProducts">Loading...</h3>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-orange-500">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Khách Hàng</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="statCustomers">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table Mockup -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-700 mb-4">Chào mừng trở lại!</h3>
+                <p class="text-gray-500">Hệ thống quản lý đang hoạt động bình thường. Sử dụng menu bên trái để quản lý các chức năng.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: SẢN PHẨM -->
+        <div id="products" class="section-content">
+            <div class="flex justify-between items-center mb-6">
+                <div class="relative w-72">
+                    <input type="text" id="searchProductInput" placeholder="Tìm kiếm sản phẩm..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <button onclick="openProductModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2 transition">
+                    <i class="fa-solid fa-plus"></i> Thêm Sản Phẩm
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">ID</th>
+                        <th class="px-6 py-4">Ảnh</th>
+                        <th class="px-6 py-4">Tên sản phẩm</th>
+                        <th class="px-6 py-4">Danh mục</th>
+                        <th class="px-6 py-4">Giá bán</th>
+                        <th class="px-6 py-4">Tồn kho</th>
+                        <th class="px-6 py-4 text-center">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                    <tr><td colspan="7" class="px-6 py-8 text-center">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 3: ĐƠN HÀNG -->
+        <div id="orders" class="section-content">
+            <div class="flex gap-4 mb-6">
+                <button onclick="filterOrders('ALL')" class="order-filter-btn px-4 py-2 bg-indigo-600 text-white border border-transparent rounded-lg font-medium shadow-sm transition active" id="btn-filter-ALL">Tất cả</button>
+                <button onclick="filterOrders('PENDING')" class="order-filter-btn px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium shadow-sm transition" id="btn-filter-PENDING">Chờ xác nhận</button>
+                <button onclick="filterOrders('PROCESSING')" class="order-filter-btn px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium shadow-sm transition" id="btn-filter-PROCESSING">Đang xử lý</button>
+                <button onclick="filterOrders('SHIPPED')" class="order-filter-btn px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium shadow-sm transition" id="btn-filter-SHIPPED">Đang giao</button>
+                <button onclick="filterOrders('COMPLETED')" class="order-filter-btn px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg font-medium shadow-sm transition" id="btn-filter-COMPLETED">Hoàn thành</button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">Mã Đơn</th>
+                        <th class="px-6 py-4">Khách hàng</th>
+                        <th class="px-6 py-4">Ngày đặt</th>
+                        <th class="px-6 py-4">Tổng tiền</th>
+                        <th class="px-6 py-4">Trạng thái</th>
+                        <th class="px-6 py-4 text-center">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="orderTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                    <tr><td colspan="6" class="px-6 py-8 text-center">Đang tải đơn hàng...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 4: NHÂN VIÊN -->
+        <div id="staffs" class="section-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-700">Danh sách Nhân viên</h3>
+                <button onclick="openStaffModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow-md flex items-center transition">
+                    <i class="fa-solid fa-user-plus mr-2"></i> Thêm Nhân viên
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold border-b">
+                    <tr>
+                        <th class="px-6 py-3">ID</th>
+                        <th class="px-6 py-3">Họ tên</th>
+                        <th class="px-6 py-3">Email</th>
+                        <th class="px-6 py-3">SĐT</th>
+                        <th class="px-6 py-3">Vai trò</th>
+                        <th class="px-6 py-3 text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="staffTableBody" class="text-sm divide-y text-gray-700">
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Đang tải danh sách nhân viên...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 5: KHÁCH HÀNG -->
+        <div id="customers" class="section-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-700">Danh sách Khách hàng</h3>
+                <div class="relative w-64">
+                    <input type="text" placeholder="Tìm kiếm khách hàng..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold border-b">
+                    <tr>
+                        <th class="px-6 py-3">ID</th>
+                        <th class="px-6 py-3">Họ tên</th>
+                        <th class="px-6 py-3">Email</th>
+                        <th class="px-6 py-3">SĐT</th>
+                        <th class="px-6 py-3">Địa chỉ</th>
+                        <th class="px-6 py-3 text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="customerTableBody" class="text-sm divide-y text-gray-700">
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Đang tải danh sách khách hàng...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 6: KHO HÀNG -->
+        <div id="inventory" class="section-content">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Tình trạng Kho hàng</h3>
+                    <button onclick="fetchInventory()" class="text-indigo-600 hover:text-indigo-800 text-sm"><i class="fa-solid fa-rotate-right mr-1"></i> Làm mới</button>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold border-b">
+                    <tr>
+                        <th class="px-6 py-3">Mã SP</th>
+                        <th class="px-6 py-3">Tên sản phẩm</th>
+                        <th class="px-6 py-3">Số lượng tồn</th>
+                        <th class="px-6 py-3">Cập nhật lần cuối</th>
+                        <th class="px-6 py-3 text-right">Cập nhật SL</th>
+                    </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody" class="text-sm divide-y text-gray-700">
+                    <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải dữ liệu kho...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 7: KHUYẾN MÃI -->
+        <div id="promotions" class="section-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-700">Danh sách Voucher</h3>
+                <button onclick="openPromoModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md flex items-center transition">
+                    <i class="fa-solid fa-ticket mr-2"></i> Thêm Voucher
+                </button>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold border-b">
+                    <tr>
+                        <th class="px-6 py-3">Mã Code</th>
+                        <th class="px-6 py-3">Loại</th>
+                        <th class="px-6 py-3">Giá trị</th>
+                        <th class="px-6 py-3">Thời gian</th>
+                        <th class="px-6 py-3">Lượt dùng</th>
+                        <th class="px-6 py-3 text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="promoTableBody" class="text-sm divide-y text-gray-700">
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 8: TIN TỨC -->
+        <div id="news" class="section-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-700">Danh sách Tin Tức</h3>
+                <button onclick="openNewsModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md flex items-center transition">
+                    <i class="fa-solid fa-plus mr-2"></i> Viết bài mới
+                </button>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold border-b">
+                    <tr>
+                        <th class="px-6 py-3 w-20">Ảnh</th>
+                        <th class="px-6 py-3">Tiêu đề</th>
+                        <th class="px-6 py-3">Danh mục</th>
+                        <th class="px-6 py-3">Ngày tạo</th>
+                        <th class="px-6 py-3 text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="newsTableBody" class="text-sm divide-y text-gray-700">
+                    <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải tin tức...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- MODAL SẢN PHẨM (Thêm no-scrollbar) -->
+<div id="productModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+    <div class="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="flex justify-between items-center mb-5 border-b pb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="modalTitle">Thêm Sản Phẩm Mới</h3>
+            <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+
+        <form id="productForm" onsubmit="saveProduct(event)">
+            <input type="hidden" id="prodId">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
+                    <input type="text" id="prodName" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
+                    <input type="text" id="prodBrand" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Giá Niêm Yết (VND)</label>
+                    <input type="number" id="prodListPrice" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Giá Bán (VND)</label>
+                    <input type="number" id="prodSellingPrice" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                <select id="prodCategory" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Link Ảnh (URL)</label>
+                <input type="url" id="prodImage" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết</label>
+                <textarea id="prodDesc" rows="3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Hủy bỏ</button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">Lưu Sản Phẩm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL NHÂN VIÊN (Thêm no-scrollbar và max-height) -->
+<div id="staffModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+    <div class="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="flex justify-between items-center mb-5 border-b pb-4">
+            <h3 class="text-xl font-bold text-gray-800">Thêm Nhân Viên Mới</h3>
+            <button onclick="closeStaffModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+        <form id="staffForm" onsubmit="saveStaff(event)">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Họ tên</label>
+                <input type="text" id="staffName" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="staffEmail" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">SĐT</label>
+                <input type="tel" id="staffPhone" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                <input type="text" id="staffAddress" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Văn phòng">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                <input type="password" id="staffPass" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Mặc định: 123456">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeStaffModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Tạo mới</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL KHUYẾN MÃI (Thêm no-scrollbar và max-height) -->
+<div id="promoModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+    <div class="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="flex justify-between items-center mb-5 border-b pb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="promoTitle">Thêm Voucher</h3>
+            <button onclick="closePromoModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+        <form id="promoForm" onsubmit="savePromotion(event)">
+            <input type="hidden" id="promoId">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Mã Code</label>
+                <input type="text" id="promoCode" required class="w-full p-2 border rounded-lg uppercase" placeholder="SALE50">
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Loại</label>
+                    <select id="promoType" class="w-full p-2 border rounded-lg bg-white">
+                        <option value="PERCENT">Phần trăm (%)</option>
+                        <option value="FIXED">Số tiền (VNĐ)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Giá trị</label>
+                    <input type="number" id="promoValue" required class="w-full p-2 border rounded-lg">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+                    <input type="date" id="promoStart" required class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Ngày kết thúc</label>
+                    <input type="date" id="promoEnd" required class="w-full p-2 border rounded-lg">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Số lượng tối đa</label>
+                <input type="number" id="promoMax" class="w-full p-2 border rounded-lg" placeholder="Không giới hạn">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" onclick="closePromoModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL TIN TỨC (Thêm no-scrollbar) -->
+<div id="newsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+    <div class="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6 m-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="flex justify-between items-center mb-5 border-b pb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="newsModalTitle">Viết Bài Mới</h3>
+            <button onclick="closeNewsModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+        <form id="newsForm" onsubmit="saveNews(event)">
+            <input type="hidden" id="newsId">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề bài viết</label>
+                <input type="text" id="newsTitle" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                    <select id="newsCategory" class="w-full p-2 border rounded-lg bg-white">
+                        <option value="Mẹo vặt">Mẹo vặt</option>
+                        <option value="Hướng dẫn sử dụng">Hướng dẫn sử dụng</option>
+                        <option value="Sức khỏe">Sức khỏe</option>
+                        <option value="Khuyến mãi">Khuyến mãi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Link Ảnh Bìa</label>
+                    <input type="url" id="newsImage" class="w-full p-2 border rounded-lg" placeholder="https://...">
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
+                <textarea id="newsContent" rows="6" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeNewsModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">Lưu Bài Viết</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api';
+    let categories = [];
+    let allOrders = [];
+    let searchTimeout;
+
+    // --- AUTH ---
+    function checkAdminAuth() {
+        const token = sessionStorage.getItem('jwt_token');
+        if (!token) { window.location.href = './auth.html?mode=login'; return null; }
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+            if (payload.role !== 'ADMIN') { alert("Không có quyền!"); window.location.href = './index.html'; return null; }
+            document.getElementById('adminName').textContent = payload.sub || 'Admin';
+            return token;
+        } catch (e) { sessionStorage.removeItem('jwt_token'); window.location.href = './auth.html'; return null; }
+    }
+    const token = checkAdminAuth();
+
+    function handleLogout() { if(confirm('Đăng xuất?')) { sessionStorage.removeItem('jwt_token'); window.location.href='./index.html'; } }
+    function formatMoney(n) { return new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(n); }
+    function formatDate(d) { return d ? new Date(d).toLocaleDateString('vi-VN') : '-'; }
+
+    // --- NAVIGATION ---
+    function switchSection(id) {
+        document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+        document.getElementById('menu-' + id).classList.add('active');
+        document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('currentPageTitle').textContent = id.toUpperCase();
+
+        if(id === 'dashboard') fetchDashboardStats();
+        if(id === 'products') fetchProducts();
+        if(id === 'orders') fetchOrders();
+        if(id === 'inventory') fetchInventory();
+        if(id === 'staffs') fetchStaffs();
+        if(id === 'customers') fetchCustomers();
+        if(id === 'promotions') fetchPromotions();
+        if(id === 'news') fetchNews();
+    }
+
+    // --- DASHBOARD STATS ---
+    async function fetchDashboardStats() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const stats = await res.json();
+            document.getElementById('statRevenue').textContent = formatMoney(stats.totalRevenue);
+            document.getElementById('statOrders').textContent = stats.newOrdersCount;
+            document.getElementById('statProducts').textContent = stats.totalProductsCount;
+            document.getElementById('statCustomers').textContent = stats.totalCustomersCount;
+        } catch (e) { console.error("Lỗi tải stats:", e); }
+    }
+
+    // --- PRODUCTS ---
+    async function fetchProducts(searchTerm = '') {
+        const tbody = document.getElementById('productTableBody');
+        try {
+            let url = `${API_BASE_URL}/products`;
+            if (searchTerm) {
+                url += `?name=${encodeURIComponent(searchTerm)}`;
+            }
+
+            const res = await fetch(url);
+            const products = await res.json();
+
+            const statProd = document.getElementById('statProducts');
+            if (statProd) statProd.textContent = products.length;
+
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Không tìm thấy sản phẩm nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.map(p => `
+                <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+                    <td class="px-6 py-4">#${p.id}</td>
+                    <td class="px-6 py-4"><img src="${p.mainImageUrl}" class="w-10 h-10 rounded object-cover border" onerror="this.src='https://placehold.co/40'"></td>
+                    <td class="px-6 py-4 font-medium text-gray-800">${p.name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${p.category ? p.category.name : '-'}</td>
+                    <td class="px-6 py-4 text-indigo-600 font-semibold">${formatMoney(p.sellingPrice)}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">${p.inventory ? p.inventory.stockQuantity : 0}</span></td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="openProductModal(${p.id})" class="text-blue-500 hover:text-blue-700 mx-1 bg-blue-50 p-2 rounded"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700 mx-1 bg-red-50 p-2 rounded"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        } catch (err) { tbody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500">Lỗi: ${err.message}</td></tr>`; }
+    }
+
+    async function loadCategories() {
+        if (categories.length > 0) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories`);
+            categories = await res.json();
+            const select = document.getElementById('prodCategory');
+            select.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+            categories.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.name; select.appendChild(opt); });
+        } catch (e) {}
+    }
+
+    async function openProductModal(productId = null) {
+        await loadCategories();
+        document.getElementById('productModal').classList.remove('hidden');
+        document.getElementById('productForm').reset();
+        const title = document.getElementById('modalTitle');
+
+        if (productId) {
+            title.textContent = "Cập nhật Sản Phẩm";
+            document.getElementById('prodId').value = productId;
+            try {
+                const res = await fetch(`${API_BASE_URL}/products/${productId}`);
+                const p = await res.json();
+                document.getElementById('prodName').value = p.name;
+                document.getElementById('prodBrand').value = p.brand || '';
+                document.getElementById('prodListPrice').value = p.listPrice;
+                document.getElementById('prodSellingPrice').value = p.sellingPrice;
+                document.getElementById('prodImage').value = p.mainImageUrl || '';
+                document.getElementById('prodDesc').value = p.description || '';
+                if (p.category) document.getElementById('prodCategory').value = p.category.id;
+            } catch (e) { alert("Lỗi tải sản phẩm!"); }
+        } else {
+            title.textContent = "Thêm Sản Phẩm Mới";
+            document.getElementById('prodId').value = '';
+        }
+    }
+    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+
+    async function saveProduct(e) {
+        e.preventDefault();
+        const id = document.getElementById('prodId').value;
+        const categoryId = document.getElementById('prodCategory').value;
+        if (!categoryId) { alert("Chọn danh mục!"); return; }
+        const payload = {
+            name: document.getElementById('prodName').value,
+            brand: document.getElementById('prodBrand').value,
+            listPrice: parseFloat(document.getElementById('prodListPrice').value),
+            sellingPrice: parseFloat(document.getElementById('prodSellingPrice').value),
+            mainImageUrl: document.getElementById('prodImage').value,
+            description: document.getElementById('prodDesc').value,
+            category: { id: parseInt(categoryId) }
+        };
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_BASE_URL}/admin/products/${id}` : `${API_BASE_URL}/admin/products`;
+
+        try {
+            const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            if (res.ok) { alert("Thành công!"); closeProductModal(); fetchProducts(); } else alert("Lỗi lưu sản phẩm");
+        } catch (err) { alert("Lỗi kết nối"); }
+    }
+
+    async function deleteProduct(id) {
+        if (!confirm(`Xóa sản phẩm ID: ${id}?`)) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) { alert("Đã xóa!"); fetchProducts(); } else alert("Lỗi xóa!");
+        } catch (err) { alert("Lỗi kết nối"); }
+    }
+
+    // --- ORDERS (CÓ LỌC) ---
+    async function fetchOrders() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
+            allOrders = await res.json();
+
+            const statOrd = document.getElementById('statOrders');
+            if (statOrd) statOrd.textContent = allOrders.length;
+
+            renderOrders(allOrders);
+        } catch (e) {
+            document.getElementById('orderTableBody').innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Lỗi tải đơn hàng</td></tr>';
+        }
+    }
+
+    function renderOrders(ordersToRender) {
+        const tbody = document.getElementById('orderTableBody');
+        if (ordersToRender.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Không có đơn hàng nào.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = ordersToRender.map(o => {
+            let statusClass = '';
+            let actionBtn = '';
+            let cancelBtn = '';
+
+            if (o.orderStatus === 'PENDING') {
+                statusClass = 'bg-yellow-100 text-yellow-800';
+                actionBtn = `<button onclick="updateOrderStatus(${o.id}, 'PROCESSING')" class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700 transition">Xác nhận</button>`;
+                cancelBtn = `<button onclick="updateOrderStatus(${o.id}, 'CANCELLED')" class="text-red-500 hover:text-red-700 text-xs border border-red-200 px-2 py-1 rounded transition ml-1">Hủy</button>`;
+            } else if (o.orderStatus === 'PROCESSING') {
+                statusClass = 'bg-blue-100 text-blue-800';
+                actionBtn = `<button onclick="updateOrderStatus(${o.id}, 'SHIPPED')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700 transition">Giao hàng</button>`;
+                cancelBtn = `<button onclick="updateOrderStatus(${o.id}, 'CANCELLED')" class="text-red-500 hover:text-red-700 text-xs border border-red-200 px-2 py-1 rounded transition ml-1">Hủy</button>`;
+            } else if (o.orderStatus === 'SHIPPED') {
+                statusClass = 'bg-purple-100 text-purple-800';
+                actionBtn = `<button onclick="updateOrderStatus(${o.id}, 'COMPLETED')" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 transition">Hoàn thành</button>`;
+            } else if (o.orderStatus === 'COMPLETED') {
+                statusClass = 'bg-green-100 text-green-800';
+                actionBtn = `<span class="text-green-600 font-bold text-xs"><i class="fa-solid fa-check"></i> Xong</span>`;
+            } else if (o.orderStatus === 'CANCELLED') {
+                statusClass = 'bg-red-100 text-red-800';
+                actionBtn = `<span class="text-red-500 text-xs">Đã hủy</span>`;
+            }
+
+            return `
+            <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+                <td class="px-6 py-4 font-bold text-gray-600">#${o.id}</td>
+                <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-gray-900">${o.receiverName || 'N/A'}</div>
+                    <div class="text-xs text-gray-500">${o.receiverPhone || ''}</div>
+                </td>
+                <td class="px-6 py-4 text-gray-500">${formatDate(o.orderDate)}</td>
+                <td class="px-6 py-4 font-bold text-gray-800">${formatMoney(o.totalAmount)}</td>
+                <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-xs font-bold ${statusClass}">${o.orderStatus}</span></td>
+                <td class="px-6 py-4 text-center space-x-1">
+                    ${actionBtn} ${cancelBtn}
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function filterOrders(status) {
+        document.querySelectorAll('.order-filter-btn').forEach(btn => {
+            btn.classList.remove('bg-indigo-600', 'text-white', 'border-transparent');
+            btn.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+        });
+        document.getElementById('btn-filter-' + status).classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+        document.getElementById('btn-filter-' + status).classList.add('bg-indigo-600', 'text-white', 'border-transparent');
+
+        if (status === 'ALL') {
+            renderOrders(allOrders);
+        } else {
+            const filtered = allOrders.filter(o => o.orderStatus === status);
+            renderOrders(filtered);
+        }
+    }
+
+    async function updateOrderStatus(id, status) {
+         if(!confirm(`Cập nhật đơn #${id}?`)) return;
+         try {
+            await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+                method: 'PUT',
+                headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            });
+            fetchOrders();
+         } catch(e) { alert("Lỗi cập nhật!"); }
+    }
+
+    // --- STAFFS & CUSTOMERS ---
+    async function fetchStaffs() {
+        const tbody = document.getElementById('staffTableBody');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/role/STAFF`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const staffs = await res.json();
+            tbody.innerHTML = staffs.map(s => `<tr><td class="px-6 py-4">#${s.id}</td><td class="px-6 py-4 font-medium">${s.fullName}</td><td class="px-6 py-4">${s.email}</td><td class="px-6 py-4">${s.phoneNumber || '-'}</td><td class="px-6 py-4"><span class="bg-blue-100 text-blue-800 px-2 rounded text-xs font-bold">STAFF</span></td><td class="px-6 py-4 text-right"><button onclick="deleteUser(${s.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Lỗi tải nhân viên</td></tr>'; }
+    }
+    async function fetchCustomers() {
+        const tbody = document.getElementById('customerTableBody');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/role/CUSTOMER`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const customers = await res.json();
+
+            const statCust = document.getElementById('statCustomers');
+            if (statCust) statCust.textContent = customers.length;
+
+            tbody.innerHTML = customers.map(c => `<tr><td class="px-6 py-4">#${c.id}</td><td class="px-6 py-4 font-medium">${c.fullName}</td><td class="px-6 py-4">${c.email}</td><td class="px-6 py-4">${c.phoneNumber || '-'}</td><td class="px-6 py-4">${c.address || '-'}</td><td class="px-6 py-4 text-right"><button onclick="deleteUser(${c.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Lỗi tải khách hàng</td></tr>'; }
+    }
+
+    function openStaffModal() { document.getElementById('staffModal').classList.remove('hidden'); }
+    function closeStaffModal() { document.getElementById('staffModal').classList.add('hidden'); }
+    async function saveStaff(e) {
+        e.preventDefault();
+        const payload = { fullName: document.getElementById('staffName').value, email: document.getElementById('staffEmail').value, phoneNumber: document.getElementById('staffPhone').value, address: document.getElementById('staffAddress').value, password: document.getElementById('staffPass').value };
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/staff`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            if(res.ok) { alert("Thành công!"); closeStaffModal(); fetchStaffs(); } else { const err = await res.text(); alert("Lỗi: " + err); }
+        } catch (err) { alert("Lỗi kết nối"); }
+    }
+    async function deleteUser(id) {
+        if(!confirm("Xóa tài khoản này?")) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/users/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) {
+                alert("Đã xóa!");
+                const activeSection = document.querySelector('.section-content.active').id;
+                if(activeSection === 'staffs') fetchStaffs();
+                if(activeSection === 'customers') fetchCustomers();
+            } else alert("Lỗi xóa!");
+        } catch(e) { alert("Lỗi kết nối"); }
+    }
+
+    // --- INVENTORY ---
+    async function fetchInventory() {
+         const tbody = document.getElementById('inventoryTableBody');
+         try {
+            const res = await fetch(`${API_BASE_URL}/admin/inventory`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const list = await res.json();
+            tbody.innerHTML = list.map(i => `<tr><td class="px-6 py-4">#${i.productId}</td><td class="px-6 py-4">${i.product ? i.product.name : 'Unknown'}</td><td class="px-6 py-4 font-bold">${i.stockQuantity}</td><td class="px-6 py-4 text-xs">${formatDate(i.updatedAt)}</td><td class="px-6 py-4 text-right"><button onclick="updateStock(${i.productId}, ${i.stockQuantity})" class="text-indigo-600 border px-2 rounded">Sửa</button></td></tr>`).join('');
+         } catch(e) {}
+    }
+    async function updateStock(id, oldQty) {
+         const qty = prompt("Nhập số lượng:", oldQty);
+         if(qty && qty >= 0) { await fetch(`${API_BASE_URL}/admin/inventory/${id}`, { method: 'PUT', headers: {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}, body: JSON.stringify({stockQuantity: parseInt(qty)})}); fetchInventory(); }
+    }
+
+    // --- PROMOTIONS (MỚI) ---
+    async function fetchPromotions() {
+        const tbody = document.getElementById('promoTableBody');
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/promotions`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const promos = await res.json();
+            if(promos.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center">Chưa có voucher.</td></tr>'; return; }
+
+            tbody.innerHTML = promos.map(p => `
+                <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+                    <td class="px-6 py-4 font-bold text-indigo-600">${p.couponCode}</td>
+                    <td class="px-6 py-4">${p.promoType}</td>
+                    <td class="px-6 py-4">${p.promoType === 'PERCENT' ? p.value + '%' : formatMoney(p.value)}</td>
+                    <td class="px-6 py-4 text-xs text-gray-500">${formatDate(p.startDate)} - ${formatDate(p.endDate)}</td>
+                    <td class="px-6 py-4">${p.currentUsage} / ${p.maxUsage || '∞'}</td>
+                    <td class="px-6 py-4 text-right">
+                         <button onclick="deletePromo(${p.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Lỗi tải voucher</td></tr>'; }
+    }
+
+    function openPromoModal() { document.getElementById('promoModal').classList.remove('hidden'); document.getElementById('promoForm').reset(); }
+    function closePromoModal() { document.getElementById('promoModal').classList.add('hidden'); }
+
+    async function savePromotion(e) {
+        e.preventDefault();
+        const payload = {
+            couponCode: document.getElementById('promoCode').value.toUpperCase(),
+            promoType: document.getElementById('promoType').value,
+            value: parseFloat(document.getElementById('promoValue').value),
+            startDate: document.getElementById('promoStart').value,
+            endDate: document.getElementById('promoEnd').value,
+            maxUsage: document.getElementById('promoMax').value ? parseInt(document.getElementById('promoMax').value) : null
+        };
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/promotions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) { alert("Thêm voucher thành công!"); closePromoModal(); fetchPromotions(); }
+            else { const err = await res.text(); alert("Lỗi: " + err); }
+        } catch(err) { alert("Lỗi kết nối"); }
+    }
+
+    async function deletePromo(id) {
+        if(!confirm("Xóa voucher này?")) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/promotions/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) { alert("Đã xóa!"); fetchPromotions(); } else alert("Lỗi xóa");
+        } catch(e) { alert("Lỗi kết nối"); }
+    }
+
+    // --- NEWS (MỚI) ---
+    async function fetchNews() {
+        const tbody = document.getElementById('newsTableBody');
+        try {
+            const res = await fetch(`${API_BASE_URL}/news`); // API Public
+            const newsList = await res.json();
+
+            if (newsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center">Chưa có bài viết nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = newsList.map(n => `
+                <tr class="hover:bg-gray-50 border-b transition">
+                    <td class="px-6 py-4"><img src="${n.imageUrl}" class="w-12 h-12 rounded object-cover border" onerror="this.src='https://placehold.co/50'"></td>
+                    <td class="px-6 py-4 font-medium text-gray-800 line-clamp-1">${n.title}</td>
+                    <td class="px-6 py-4"><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${n.category || 'Chung'}</span></td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${formatDate(n.createdAt)}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="openNewsModal(${n.id})" class="text-blue-500 hover:text-blue-700 mx-2"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteNews(${n.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Lỗi kết nối.</td></tr>';
+        }
+    }
+
+    async function openNewsModal(id = null) {
+        document.getElementById('newsModal').classList.remove('hidden');
+        document.getElementById('newsForm').reset();
+        const title = document.getElementById('newsModalTitle');
+
+        if(id) {
+            title.textContent = "Cập nhật Bài Viết";
+            document.getElementById('newsId').value = id;
+            try {
+                const res = await fetch(`${API_BASE_URL}/news/${id}`);
+                const n = await res.json();
+                document.getElementById('newsTitle').value = n.title;
+                document.getElementById('newsCategory').value = n.category;
+                document.getElementById('newsImage').value = n.imageUrl;
+                document.getElementById('newsContent').value = n.content;
+            } catch(e) { alert("Lỗi tải bài viết"); }
+        } else {
+            title.textContent = "Viết Bài Mới";
+            document.getElementById('newsId').value = "";
+        }
+    }
+    function closeNewsModal() { document.getElementById('newsModal').classList.add('hidden'); }
+
+    async function saveNews(e) {
+        e.preventDefault();
+        const id = document.getElementById('newsId').value;
+        const payload = {
+            title: document.getElementById('newsTitle').value,
+            category: document.getElementById('newsCategory').value,
+            imageUrl: document.getElementById('newsImage').value,
+            content: document.getElementById('newsContent').value
+        };
+
+        const url = id ? `${API_BASE_URL}/admin/news/${id}` : `${API_BASE_URL}/admin/news`;
+        const method = id ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) { alert("Thành công!"); closeNewsModal(); fetchNews(); }
+            else alert("Lỗi lưu bài viết");
+        } catch(err) { alert("Lỗi kết nối"); }
+    }
+
+    async function deleteNews(id) {
+        if(!confirm("Xóa bài viết này?")) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/news/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) { alert("Đã xóa!"); fetchNews(); } else alert("Lỗi xóa");
+        } catch(e) { alert("Lỗi kết nối"); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchDashboardStats();
+        fetchProducts();
+
+        const searchInput = document.getElementById('searchProductInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const term = e.target.value.trim();
+                searchTimeout = setTimeout(() => {
+                    fetchProducts(term);
+                }, 300);
+            });
+        }
+    });
+</script>
+</body>
+</html>

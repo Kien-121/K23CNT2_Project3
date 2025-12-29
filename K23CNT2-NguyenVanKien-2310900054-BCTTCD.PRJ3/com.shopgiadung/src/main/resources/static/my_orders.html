@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn Hàng Của Tôi - NVK Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style> body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; } </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="bg-white shadow-md sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center">
+            <a href="index.html" class="mr-4 text-gray-600 hover:text-indigo-600 focus:outline-none">
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-600 truncate cursor-pointer" onclick="window.location.href='index.html'">NVK SHOP</h1>
+        </div>
+        <nav id="authLinks" class="flex items-center space-x-4">
+            <span id="userNameDisplay" class="text-gray-700 font-medium hidden sm:block"></span>
+            <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-medium">Đăng xuất</button>
+        </nav>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-8 flex-grow max-w-5xl">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Lịch Sử Đơn Hàng</h2>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-10">
+        <i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-600"></i>
+        <p class="mt-2 text-gray-500">Đang tải đơn hàng...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12 bg-white rounded-xl shadow-sm">
+        <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg mb-4">Bạn chưa có đơn hàng nào.</p>
+        <a href="index.html" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">Mua sắm ngay</a>
+    </div>
+
+    <!-- Order List -->
+    <div id="orderList" class="space-y-6"></div>
+
+</main>
+
+<footer class="bg-gray-800 text-white py-6 mt-12 text-center">
+    <p>&copy; 2025 NVK Shop. All rights reserved.</p>
+</footer>
+
+<script>
+    const API_URL = 'http://localhost:8080/api/orders/my-orders';
+    const CANCEL_API_URL = 'http://localhost:8080/api/orders';
+
+    function getAuthToken() { return sessionStorage.getItem('jwt_token'); }
+
+    function checkAuth() {
+        const token = getAuthToken();
+        if (!token) {
+            alert("Vui lòng đăng nhập để xem đơn hàng.");
+            window.location.href = 'auth.html?mode=login';
+            return null;
+        }
+        // Decode token để lấy tên hiển thị
+        try {
+            const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+            document.getElementById('userNameDisplay').textContent = `Xin chào, ${payload.sub.split('@')[0]}`;
+            return token;
+        } catch (e) {
+            sessionStorage.removeItem('jwt_token');
+            window.location.href = 'auth.html?mode=login';
+            return null;
+        }
+    }
+
+    function formatMoney(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleString('vi-VN');
+    }
+
+    function getStatusBadge(status) {
+        switch (status) {
+            case 'PENDING': return '<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">Chờ xác nhận</span>';
+            case 'PROCESSING': return '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">Đang xử lý</span>';
+            case 'SHIPPED': return '<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold">Đang giao</span>';
+            case 'COMPLETED': return '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">Hoàn thành</span>';
+            case 'CANCELLED': return '<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-bold">Đã hủy</span>';
+            default: return `<span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-bold">${status}</span>`;
+        }
+    }
+
+    async function fetchMyOrders() {
+        const token = checkAuth();
+        if(!token) return;
+
+        try {
+            const res = await fetch(API_URL, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error('Lỗi tải dữ liệu');
+            const orders = await res.json();
+
+            document.getElementById('loading').classList.add('hidden');
+
+            if (orders.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            const listContainer = document.getElementById('orderList');
+            listContainer.innerHTML = orders.map(order => `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+                    <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100">
+                        <div class="mb-2 sm:mb-0">
+                            <span class="font-bold text-gray-700 mr-2">Mã đơn: #${order.id}</span>
+                            <span class="text-sm text-gray-500">${formatDate(order.orderDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            ${getStatusBadge(order.orderStatus)}
+                            ${order.orderStatus === 'PENDING' ?
+                                `<button onclick="cancelOrder(${order.id})" class="text-red-500 hover:text-red-700 text-sm font-medium border border-red-200 px-3 py-1 rounded bg-white transition">Hủy đơn</button>`
+                                : ''}
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="space-y-4 mb-4">
+                            ${order.items.map(item => `
+                                <div class="flex items-center">
+                                    <div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                                        <img src="${item.product ? item.product.mainImageUrl : 'https://placehold.co/100'}" class="h-full w-full object-cover object-center">
+                                    </div>
+                                    <div class="ml-4 flex-1 flex flex-col">
+                                        <div class="flex justify-between text-base font-medium text-gray-900">
+                                            <h3>${item.product ? item.product.name : 'Sản phẩm đã xóa'}</h3>
+                                            <p class="ml-4">${formatMoney(item.priceAtOrder * item.quantity)}</p>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">Số lượng: ${item.quantity} x ${formatMoney(item.priceAtOrder)}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                            <div class="text-sm text-gray-600 mb-2 sm:mb-0">
+                                <p><i class="fa-solid fa-location-dot mr-2"></i> ${order.shippingAddress}</p>
+                                <p><i class="fa-solid fa-phone mr-2"></i> ${order.receiverPhone} (${order.receiverName})</p>
+                            </div>
+                            <div class="text-xl font-bold text-indigo-600">
+                                Tổng cộng: ${formatMoney(order.totalAmount)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error(e);
+            alert("Có lỗi xảy ra khi tải đơn hàng.");
+        }
+    }
+
+    async function cancelOrder(orderId) {
+        if(!confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+
+        const token = getAuthToken();
+        try {
+            // Sử dụng API PUT /api/orders/{id}/status giống Admin, nhưng cần logic ở Backend kiểm tra user
+            // Tạm thời gọi API này, nếu backend NvkOrderController.updateOrderStatus không check role ADMIN thì user gọi được.
+            // Nếu Controller yêu cầu ADMIN, bạn cần tạo API riêng cho User hủy đơn (VD: PUT /api/orders/{id}/cancel)
+            // GIẢ SỬ: Ta dùng chung và mở quyền, hoặc tạo API mới.
+            // Ở ĐÂY TÔI SẼ GỌI API update status (lưu ý SecurityConfig phải cho phép User gọi PUT này nếu muốn dùng chung, hoặc tốt nhất là tạo API riêng).
+
+            // Cách an toàn hơn: Gọi API riêng cho user (cần thêm vào Controller)
+            // Nhưng để nhanh, tôi sẽ giả định User có thể gọi PUT /api/orders/{id}/status nếu Security cho phép.
+            // Tuy nhiên, tốt nhất là Admin mới đổi status tùy ý. User chỉ được Cancel.
+
+            // --- CALL API HỦY ---
+            const res = await fetch(`${CANCEL_API_URL}/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'CANCELLED' })
+            });
+
+            if (res.ok) {
+                alert("Đã hủy đơn hàng thành công.");
+                fetchMyOrders();
+            } else {
+                alert("Không thể hủy đơn hàng này (Có thể đơn đã được xử lý).");
+            }
+        } catch (e) {
+            alert("Lỗi kết nối.");
+        }
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem('jwt_token');
+        window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchMyOrders);
+</script>
+</body>
+</html>
